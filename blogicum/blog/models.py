@@ -1,12 +1,26 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.urls import reverse
 
-from core.models import PublishedModel
 
-
-MAX_LENGTH = 256
+MAX_LENGTH = settings.MAX_LENGTH
 
 User = get_user_model()
+
+
+class PublishedModel(models.Model):
+    """Абстрактная модель. Добвляет флаг is_published и дату created_at."""
+
+    is_published = models.BooleanField(
+        default=True,
+        verbose_name='Опубликовано',
+        help_text='Снимите галочку, чтобы скрыть публикацию.')
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name='Добавлено')
+
+    class Meta:
+        abstract = True
 
 
 class Location(PublishedModel):
@@ -70,11 +84,22 @@ class Post(PublishedModel):
         verbose_name='Категория',
         related_name='category_posts'
     )
+    image = models.ImageField('Изображение', upload_to='post_images', null=True, blank=True)
 
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date',)
 
+    def get_absolute_url(self):
+        return reverse('blog:profile', kwargs={'username': self.author})
+
     def __str__(self):
         return self.title
+
+
+class Comment(PublishedModel):
+    text = models.TextField(verbose_name='Текст')
+
+    def __str__(self):
+        return self.text

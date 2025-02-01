@@ -7,10 +7,15 @@ SECRET_KEY = 'django-insecure-=4p#dp4k54qx69pqg5@qs)3-5mul3&k68c4v4$%k5facs-189&
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'
 
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
 
 INSTALLED_APPS = [
+    'django_bootstrap5',
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.contenttypes',
@@ -94,6 +99,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOGIN_REDIRECT_URL = 'blog:index'
+
+LOGIN_URL = 'login'
 
 STATIC_URL = '/static/'
 
@@ -102,3 +110,9 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MAX_LENGTH = 256
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = BASE_DIR / 'media'
