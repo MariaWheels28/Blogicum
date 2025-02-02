@@ -25,6 +25,10 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ['text']
+        text = forms.CharField(
+            widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            label='Your comment'
+        )
 
 
 class UserEditProfileForm(forms.ModelForm):
@@ -34,7 +38,8 @@ class UserEditProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['first_name'].widget.attrs.update({'class': 'form-control'})
+        self.fields['first_name'].widget.attrs.update({'class':
+                                                       'form-control'})
         self.fields['last_name'].widget.attrs.update({'class': 'form-control'})
         self.fields['email'].widget.attrs.update({'class': 'form-control'})
 

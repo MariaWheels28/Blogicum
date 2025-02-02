@@ -92,14 +92,33 @@ class Post(PublishedModel):
         ordering = ('-pub_date',)
 
     def get_absolute_url(self):
-        return reverse('blog:profile', kwargs={'username': self.author})
+        return reverse('blog:post_detail', kwargs={'pk': self.pk})
 
     def __str__(self):
         return self.title
 
 
 class Comment(PublishedModel):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Публикация'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор комментария',
+        related_name='comments'
+    )
     text = models.TextField(verbose_name='Текст')
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name='Дата создания')
+
+    class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ['-created_at']
 
     def __str__(self):
-        return self.text
+        return f'Комментарий от {self.author} к {self.post}'
