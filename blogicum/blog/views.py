@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 
 
 from blog.models import Post, Category, Comment
@@ -17,6 +17,17 @@ from .forms import PostForm, UserEditProfileForm, CategoryForm, CommentForm
 
 
 User = get_user_model()
+
+
+class OnlyAuthorMixin(UserPassesTestMixin):
+    """post = self.get_object() return self.request.user == post.author"""
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
+
+    def handle_no_permission(self):
+        return redirect('blog:index')
 
 
 # Post-related views
@@ -32,7 +43,7 @@ class PostListView(ListView):
             pub_date__lte=datetime.datetime.now()
         ).select_related('author', 'category', 'location').annotate(
             comment_count=Count('comments')
-        )
+        ).order_by('-pub_date')
 
 
 class PostDetailView(DetailView):
@@ -43,10 +54,10 @@ class PostDetailView(DetailView):
     def get_queryset(self):
         return Post.objects.filter(
             is_published=True,
-            category__is_published=True,
-            pub_date__lte=datetime.datetime.now()
-        ).select_related('author', 'category', 'location'
-                         ).prefetch_related('comments')
+            category__is_published=True
+        ).select_related('author', 'category', 'location').prefetch_related(
+            Prefetch('comments',
+                     queryset=Comment.objects.order_by('created_at')))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -73,7 +84,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return reverse('blog:profile', kwargs={'username': username})
 
 
-class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class PostEditView(LoginRequiredMixin, OnlyAuthorMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
@@ -83,24 +94,19 @@ class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return reverse('blog:post_detail', kwargs={'pk': self.object.pk})
 
-    def test_func(self):
-        post = self.get_object()
-        return self.request.user == post.author
 
-
-class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class PostDeleteView(LoginRequiredMixin, OnlyAuthorMixin, DeleteView):
     model = Post
-    template_name = 'blog/post_confirm_delete.html'
-    context_object_name = 'post'
-    success_url = reverse_lazy('blog:post_list')
+    success_url = reverse_lazy('blog:index')
+    template_name = 'blog/create.html'
     pk_url_kwarg = 'post_id'
 
-    def test_func(self):
-        post = self.get_object()
-        return self.request.user == post.author
+    def get_queryset(self):
+        return super().get_queryset()
 
-    def get_object(self, queryset=None):
-        return Post.objects.get(id=self.kwargs['post_id'])
+    def dispatch(self, request, *args, **kwargs):
+        request.session['return_to'] = request.META.get('HTTP_REFERER')
+        return super().dispatch(request, *args, **kwargs)
 
 
 # Comment-related views
@@ -135,13 +141,12 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         return self.object.post.get_absolute_url()
 
 
-class EditCommentView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class EditCommentView(LoginRequiredMixin, OnlyAuthorMixin, UpdateView):
     model = Comment
     form_class = CommentForm
     template_name = 'blog/comment.html'
 
     def get_object(self, queryset=None):
-        """Ensure the comment belongs to a published post."""
         return get_object_or_404(
             Comment.objects.select_related('post'),
             pk=self.kwargs['comment_id'],
@@ -153,11 +158,8 @@ class EditCommentView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return self.object.post.get_absolute_url()
 
-    def test_func(self):
-        return self.request.user == self.get_object().author
 
-
-class DeleteCommentView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class DeleteCommentView(LoginRequiredMixin, OnlyAuthorMixin, DeleteView):
     model = Comment
     template_name = 'blog/comment.html'
 
@@ -178,9 +180,6 @@ class DeleteCommentView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         comment.delete()
         messages.success(request, 'Комментарий удалён!')
         return redirect('blog:post_detail', pk=post_id)
-
-    def test_func(self):
-        return self.request.user == self.get_object().author
 
 
 # Profile-related viwes
@@ -203,7 +202,7 @@ class ProfilePostsView(LoginRequiredMixin, ListView):
     template_name = 'blog/profile.html'
     ordering = '-pub_date'
     paginate_by = 10
-    
+
     def get_queryset(self):
         username = self.kwargs['username']
         user = get_object_or_404(User, username=username)
@@ -232,9 +231,11 @@ class CategoryPostsView(ListView):
         )
         return Post.objects.filter(
             category=self.category,
-            is_published=True
+            is_published=True,
+            pub_date__lte=datetime.datetime.now()
         ).select_related('author', 'location'
-                         ).annotate(comment_count=Count('comments'))
+                         ).annotate(comment_count=Count('comments')
+                                    ).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
