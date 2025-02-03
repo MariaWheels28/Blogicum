@@ -1,4 +1,3 @@
-import datetime
 from typing import Optional, Type
 
 from django.http import HttpResponseRedirect
