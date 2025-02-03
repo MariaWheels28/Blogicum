@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Prefetch, Q, QuerySet
 from django.conf import settings
+from django.utils import timezone
 
 
 from blog.models import Post, Category, Comment
@@ -21,6 +22,7 @@ from .forms import PostForm, UserEditProfileForm, CategoryForm, CommentForm
 User = get_user_model()
 
 PAGINATE_BY = settings.PAGINATE_BY
+NOW = timezone.now()
 
 
 class OnlyAuthorMixin(UserPassesTestMixin):
@@ -43,7 +45,7 @@ def get_post_queryset(self) -> QuerySet[Post]:
     return Post.objects.filter(
         is_published=True,
         category__is_published=True,
-        pub_date__lte=datetime.datetime.now()
+        pub_date__lte=NOW
     ).order_by('-pub_date')
 
 
@@ -54,8 +56,13 @@ def get_comment_object(self) -> Comment:
         id=self.kwargs['comment_id'],
         post__is_published=True,
         post__category__is_published=True,
-        post__pub_date__lte=datetime.datetime.now()
+        post__pub_date__lte=NOW
     )
+
+
+def annotate_count_comments(queryset) -> QuerySet:
+    """Возвращает отфильтрованныe об сообщения."""
+    return queryset.annotate(comment_count=Count('comments'))
 
 
 # Post-related views
@@ -67,10 +74,8 @@ class PostListView(ListView):
     paginate_by: int = PAGINATE_BY
 
     def get_queryset(self) -> QuerySet[Post]:
-        return get_post_queryset(self).select_related(
-            'author', 'category', 'location').annotate(
-                comment_count=Count('comments')
-        )
+        return annotate_count_comments(get_post_queryset(self).select_related(
+            'author', 'category', 'location'))
 
 
 class PostDetailView(DetailView):
@@ -155,10 +160,8 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     template_name: str = 'blog/comment.html'
 
     def get_queryset(self) -> QuerySet[Post]:
-        return get_post_queryset(self).select_related(
-            'author', 'category', 'location').annotate(
-                comment_count=Count('comments')
-        )
+        return annotate_count_comments(get_post_queryset(self).select_related(
+            'author', 'category', 'location'))
 
     def form_valid(self, form) -> HttpResponseRedirect:
         post = get_object_or_404(get_post_queryset(self),
@@ -228,8 +231,8 @@ class ProfilePostsView(ListView):
     def get_queryset(self) -> QuerySet[Post]:
         username = self.kwargs['username']
         user = get_object_or_404(User, username=username)
-        return Post.objects.filter(author=user).order_by('-pub_date').annotate(
-            comment_count=Count('comments')
+        return annotate_count_comments(
+            Post.objects.filter(author=user).order_by('-pub_date')
         )
 
     def get_context_data(self, **kwargs) -> dict:
@@ -253,9 +256,9 @@ class CategoryPostsView(ListView):
         self.category = get_object_or_404(
             Category, slug=self.kwargs['category_slug'], is_published=True
         )
-        return get_post_queryset(self).filter(
+        return annotate_count_comments(get_post_queryset(self).filter(
             category=self.category).select_related(
-                'author', 'location').annotate(comment_count=Count('comments'))
+                'author', 'location'))
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
