@@ -59,8 +59,8 @@ def get_comment_object(self) -> Comment:
     )
 
 
-def annotate_count_comments(queryset) -> QuerySet:
-    """Возвращает отфильтрованныe об сообщения."""
+def annotate_count_comments(queryset) -> QuerySet[Post]:
+    """Подсчитывает и возвращает количество комментриев."""
     return queryset.annotate(comment_count=Count('comments'))
 
 
