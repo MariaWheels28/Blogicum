@@ -95,8 +95,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru-RU'
 
-# TIME_ZONE = 'America/Los_Angeles'
-
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
@@ -118,6 +116,8 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MAX_LENGTH = 256
+
+PAGINATE_BY = 10
 
 MEDIA_URL = '/media/'
 
