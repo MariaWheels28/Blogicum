@@ -253,13 +253,9 @@ class CategoryPostsView(ListView):
         self.category = get_object_or_404(
             Category, slug=self.kwargs['category_slug'], is_published=True
         )
-        return Post.objects.filter(
-            category=self.category,
-            is_published=True,
-            pub_date__lte=datetime.datetime.now()
-        ).select_related('author', 'location'
-                         ).annotate(comment_count=Count('comments')
-                                    ).order_by('-pub_date')
+        return get_post_queryset(self).filter(
+            category=self.category).select_related(
+                'author', 'location').annotate(comment_count=Count('comments'))
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
