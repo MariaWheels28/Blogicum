@@ -26,7 +26,7 @@ urlpatterns = [
     # Profile-related URLs
     path('profile/edit/', views.UserEditProfileView.as_view(),
          name='edit_profile'),
-    path('profile/<slug:username>/', views.ProfilePostsView.as_view(),
+    path('profile/<str:username>/', views.ProfilePostsView.as_view(),
          name='profile'),
 
     # Category-related URLs

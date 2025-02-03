@@ -2,12 +2,11 @@ import datetime
 
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, ListView, UpdateView, View
+    CreateView, DeleteView, DetailView, ListView, UpdateView
 )
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
-from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Prefetch
 
@@ -20,7 +19,6 @@ User = get_user_model()
 
 
 class OnlyAuthorMixin(UserPassesTestMixin):
-    """post = self.get_object() return self.request.user == post.author"""
 
     def test_func(self):
         post = self.get_object()
@@ -49,7 +47,7 @@ class PostListView(ListView):
 class PostDetailView(DetailView):
     model = Post
     template_name = 'blog/detail.html'
-    context_object_name = 'post'
+    # context_object_name = 'post'
 
     def get_queryset(self):
         return Post.objects.filter(
@@ -88,7 +86,7 @@ class PostEditView(LoginRequiredMixin, OnlyAuthorMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
-    context_object_name = 'post'
+    # context_object_name = 'post'
     pk_url_kwarg = 'post_id'
 
     def get_success_url(self):
@@ -101,12 +99,12 @@ class PostDeleteView(LoginRequiredMixin, OnlyAuthorMixin, DeleteView):
     template_name = 'blog/create.html'
     pk_url_kwarg = 'post_id'
 
-    def get_queryset(self):
-        return super().get_queryset()
-
-    def dispatch(self, request, *args, **kwargs):
-        request.session['return_to'] = request.META.get('HTTP_REFERER')
-        return super().dispatch(request, *args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = self.get_object()
+        form = PostForm(instance=post)
+        context['form'] = form
+        return context
 
 
 # Comment-related views
@@ -134,7 +132,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         form.instance.post = post
         form.save()
 
-        messages.success(self.request, "Ваш комментарий успешно добавлен.")
         return redirect(post.get_absolute_url())
 
     def get_success_url(self):
@@ -174,12 +171,6 @@ class DeleteCommentView(LoginRequiredMixin, OnlyAuthorMixin, DeleteView):
 
     def get_success_url(self):
         return self.object.post.get_absolute_url()
-
-    def post(self, request, post_id, comment_id):
-        comment = get_object_or_404(Comment, pk=comment_id)
-        comment.delete()
-        messages.success(request, 'Комментарий удалён!')
-        return redirect('blog:post_detail', pk=post_id)
 
 
 # Profile-related viwes
