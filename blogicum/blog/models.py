@@ -6,6 +6,8 @@ from django.urls import reverse
 
 MAX_LENGTH = settings.MAX_LENGTH
 
+MAX_LENGTH_SLUG = settings.MAX_LENGTH_SLUG
+
 User = get_user_model()
 
 
@@ -38,7 +40,7 @@ class Location(PublishedModel):
 class Category(PublishedModel):
     title = models.CharField(max_length=MAX_LENGTH, verbose_name='Заголовок')
     slug = models.SlugField(
-        max_length=64, unique=True,
+        max_length=MAX_LENGTH_SLUG, unique=True,
         verbose_name='Идентификатор',
         help_text=(
             'Идентификатор страницы для URL; разрешены символы латиницы, '

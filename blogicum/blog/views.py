@@ -50,7 +50,7 @@ def get_post_queryset(self) -> QuerySet[Post]:
 
 
 def get_comment_object(self) -> Comment:
-    """Возвращает отфильтрованный об сообщения."""
+    """Возвращает отфильтрованный объект сообщения."""
     return get_object_or_404(
         Comment.objects.select_related('post'),
         id=self.kwargs['comment_id'],

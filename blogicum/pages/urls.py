@@ -8,8 +8,3 @@ urlpatterns = [
     path('about/', views.PageAbout.as_view(), name='about'),
     path('rules/', views.PageRules.as_view(), name='rules'),
 ]
-
-
-# urlpatterns = [
-#     path('', views.HomePage.as_view(), name='homepage'),
-# ]

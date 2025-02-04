@@ -30,7 +30,7 @@ class CommentForm(forms.ModelForm):
 
     class Meta:
         model = Comment
-        fields = ['text']
+        fields = ('text',)
         text = forms.CharField(
             widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             label='Your comment'
