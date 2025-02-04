@@ -21,6 +21,7 @@ from .forms import PostForm, UserEditProfileForm, CategoryForm, CommentForm
 User = get_user_model()
 
 PAGINATE_BY = settings.PAGINATE_BY
+
 NOW = timezone.now()
 
 
