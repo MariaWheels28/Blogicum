@@ -7,6 +7,7 @@ class CommentInline(admin.TabularInline):
     model = Comment
     extra = 1
     readonly_fields = ('author', 'text', 'created_at')
+    can_delete = True
 
 
 @admin.register(Post)
