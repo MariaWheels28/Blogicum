@@ -29,5 +29,12 @@ class PostAdmin(admin.ModelAdmin):
     inlines = [CommentInline]
 
 
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('post', 'author', 'text', 'created_at')
+    list_filter = ('post', 'author')
+    search_fields = ('text',)
+
+
 admin.site.register(Category)
 admin.site.register(Location)
