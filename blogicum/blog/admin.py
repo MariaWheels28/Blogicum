@@ -3,6 +3,12 @@ from django.contrib import admin
 from .models import Post, Category, Location, Comment
 
 
+class CommentInline(admin.TabularInline):
+    model = Comment
+    extra = 1
+    readonly_fields = ('author', 'text', 'created_at')
+
+
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = (
@@ -20,8 +26,8 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ('title',)
     list_filter = ('is_published', 'category')
     list_display_links = ('title',)
+    inlines = [CommentInline]
 
 
 admin.site.register(Category)
 admin.site.register(Location)
-admin.site.register(Comment)
