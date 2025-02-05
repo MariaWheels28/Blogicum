@@ -3,10 +3,11 @@ from django.contrib import admin
 from .models import Post, Category, Location, Comment
 
 
-class CommentInline(admin.TabularInline):
+class CommentInline(admin.StackedInline):
     model = Comment
     extra = 1
-    readonly_fields = ('author', 'text', 'created_at')
+    fields = ('author', 'text', 'created_at')
+    readonly_fields = ('created_at',)
     can_delete = True
 
 
@@ -34,7 +35,7 @@ class PostAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('post', 'author', 'text', 'created_at')
     list_filter = ('post', 'author')
-    search_fields = ('text',)
+    search_fields = ('text', 'author__username')
 
 
 admin.site.register(Category)
