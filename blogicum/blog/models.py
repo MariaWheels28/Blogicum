@@ -3,10 +3,8 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.urls import reverse
 
+from blog.constants import MAX_LENGTH, MAX_LENGTH_SLUG
 
-MAX_LENGTH = settings.MAX_LENGTH
-
-MAX_LENGTH_SLUG = settings.MAX_LENGTH_SLUG
 
 User = get_user_model()
 
@@ -121,7 +119,7 @@ class Comment(PublishedModel):
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ['-created_at']
+        ordering = ('-created_at',)
 
     def __str__(self):
         return f'Комментарий от {self.author} к {self.post}'
