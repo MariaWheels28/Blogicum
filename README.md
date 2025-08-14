@@ -5,6 +5,7 @@
 A website with user-submitted posts and comments on the posts.
 Features: user registration, selection of post categories, locations, and images for posts, as well as pagination on the main page.
 
-https://pictures.s3.yandex.net/resources/S3.2_062_1676932470.png<img width="2880" height="2060" alt="image" src="https://github.com/user-attachments/assets/b0e0dc32-04fd-47b2-b861-fffa9ab50a70" />
+<img width="2880" height="2060" alt="image" src="https://github.com/user-attachments/assets/0e4f717f-6006-4fc2-9430-3e21443938ab" />
 
-https://pictures.s3.yandex.net/resources/S3.2_071_1676932479.png<img width="2880" height="1680" alt="image" src="https://github.com/user-attachments/assets/1946742a-5e69-474b-b4f4-73c29a1ea049" />
+<img width="2880" height="1680" alt="image" src="https://github.com/user-attachments/assets/ea1fd2c3-4313-4fec-9e38-77577337c8c4" />
+
