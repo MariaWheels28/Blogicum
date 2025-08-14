@@ -1,6 +1,7 @@
 # Blogicum
 
 Сайт с публикациями от пользователей, с комментариями на публикации. Надстройки: регистрация пользователей, выбор категори публикаций, локации и изображения для поста, пагинация для главной страницы.
+(Рабочее название проекта - django_sprint_project_4)
 
 A website with user-submitted posts and comments on the posts.
 Features: user registration, selection of post categories, locations, and images for posts, as well as pagination on the main page.
